@@ -149,7 +149,7 @@ Resources:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       AllocatedStorage: !If [HasDBSnapshotIdentifier, !Ref 'AWS::NoValue', !Ref DBAllocatedStorage]
-      AllowMajorVersionUpgrade: false
+      AllowMajorVersionUpgrade: true
       AutoMinorVersionUpgrade: true
       BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
       CopyTagsToSnapshot: true
