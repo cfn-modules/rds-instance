@@ -92,6 +92,15 @@ Parameters:
     Description: 'Role to be added as feature name Lambda for the RDS instance being created.'
     Type: String
     Default: ''
+  CACertificateIdentifier:
+    Description: 'Optional certificate authority (CA) of the DB instance (e.g., rds-ca-rsa2048-g1). Leave blank to keep the RDS default (no change on existing instances).'
+    Type: String
+    Default: ''
+  CertificateRotationRestart:
+    Description: 'Specifies if the DB instance is restarted when the CA is changed (ignored if CACertificateIdentifier is blank). Set to false to apply the new CA at the next reboot or maintenance window.'
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
 Conditions:
   HasAlertingModule: !Not [!Equals [!Ref AlertingModule, '']]
   HasHostedZoneModule: !Not [!Equals [!Ref HostedZoneModule, '']]
@@ -102,6 +111,7 @@ Conditions:
   HasKmsKeyModuleAndNotDBSnapshotIdentifier: !And [!Condition HasKmsKeyModule, !Not [!Condition HasDBSnapshotIdentifier]]
   HasDBParameterGroupName: !Not [!Equals [!Ref DBParameterGroupName, '']]
   HasLambdaExecutionRole: !Not [!Equals [!Ref LambdaExecutionRoleArn, '']]
+  HasCACertificateIdentifier: !Not [!Equals [!Ref CACertificateIdentifier, '']]
 Resources:
   RecordSet:
     Condition: HasHostedZoneModule
@@ -151,6 +161,8 @@ Resources:
       AllocatedStorage: !If [HasDBSnapshotIdentifier, !Ref 'AWS::NoValue', !Ref DBAllocatedStorage]
       AllowMajorVersionUpgrade: true
       AutoMinorVersionUpgrade: true
+      CACertificateIdentifier: !If [HasCACertificateIdentifier, !Ref CACertificateIdentifier, !Ref 'AWS::NoValue']
+      CertificateRotationRestart: !If [HasCACertificateIdentifier, !Ref CertificateRotationRestart, !Ref 'AWS::NoValue']
       BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
       CopyTagsToSnapshot: true
       DBInstanceClass: !Ref DBInstanceClass
@@ -330,7 +342,7 @@ Outputs:
   ModuleId:
     Value: 'rds-instance'
   ModuleVersion:
-    Value: '1.5.0'
+    Value: '1.6.0'
   StackName:
     Value: !Ref 'AWS::StackName'
   Name:
